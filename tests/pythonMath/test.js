@@ -16,9 +16,11 @@ const test = (CliFry) => {
 
     const result = await testRun.untilStdoutIncludes("20", 2000);
 
+    testRun.waitUntilOutputIdleSeconds(1, 2000);
+
     testRun.write("exit()");
 
-    await testRun.stopped();
+    await testRun.stopped(1000);
 
     if (!result) {
       reject("10 + 10 does not equal 21");

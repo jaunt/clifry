@@ -8,6 +8,7 @@ const { spawn } = require("child_process");
 import { Pinger, makeLoggers } from "./shared";
 import { exit } from "process";
 import { triggerAsyncId } from "async_hooks";
+import { stringify } from "querystring";
 
 var emitter = require("events").EventEmitter;
 
@@ -132,16 +133,21 @@ const runTest = (testName: string) => {
             result: null,
           };
 
-          const _untilArrayIncludes = (
+          const _untilArrayTests = (
+            testName: string,
             type: string,
             search: string,
+            test: (value: string, search: string) => boolean,
             timeout: number
           ) => {
             // optimized so that we don't keep checking the entire
             // recorded output every time.  Can be called multiple times before
             // or after a search string is found.  to find the next time the
             // search occurs
-            const _outIncludes = (search: string) => {
+            const _searchOutput = (
+              search: string,
+              test: (value: string, search: string) => boolean
+            ) => {
               if (!state.findIndex[search]) {
                 state.findIndex[search] = 0;
               }
@@ -150,7 +156,7 @@ const runTest = (testName: string) => {
                 return false;
               const index = state.output[type]
                 .slice(state.findIndex[search])
-                .findIndex((value) => value.includes(search));
+                .findIndex((value) => test(value, search));
               state.findIndex[search] =
                 index == -1
                   ? state.output[type].length
@@ -163,15 +169,17 @@ const runTest = (testName: string) => {
                 resolve(0);
                 return;
               }
-              if (_outIncludes(search)) {
-                log(type + " already includes " + search);
+              if (_searchOutput(search, test)) {
+                log(type + " already passes " + testName + " with " + search);
                 resolve(true);
               } else {
-                log("Waiting for " + type + " to include: " + search);
+                log(
+                  "Waiting for " + type + " to " + testName + " with " + search
+                );
                 let _timeout: NodeJS.Timeout | null = null;
                 function _testOutput(data: Buffer) {
-                  if (_outIncludes(search)) {
-                    log("Output now includes " + search);
+                  if (_searchOutput(search, test)) {
+                    log("Output now passes " + testName + " with " + search);
                     if (_timeout != null) {
                       clearTimeout(_timeout);
                     }
@@ -182,7 +190,14 @@ const runTest = (testName: string) => {
                 if (timeout) {
                   log("Will timeout in " + timeout + " ms");
                   _timeout = setTimeout(() => {
-                    log("Timed out waiting for " + type + " to be " + search);
+                    log(
+                      "Timed out waiting for " +
+                        type +
+                        " to pass " +
+                        testName +
+                        " with " +
+                        search
+                    );
                     state.process[type].removeListener("data", _testOutput);
                     resolve(false);
                   }, timeout);
@@ -302,7 +317,7 @@ const runTest = (testName: string) => {
               log("Sleeping for " + ms + "ms");
               return new Promise((resolve) => setTimeout(resolve, ms));
             },
-            waitUntilStdIdleSeconds: (seconds: Number, timeout: number) => {
+            waitUntilOutputIdleSeconds: (seconds: Number, timeout: number) => {
               // wait number of seconds since last stdout or stderr
               state.secondsIdle = 0;
               return new Promise(function (resolve) {
@@ -340,11 +355,69 @@ const runTest = (testName: string) => {
                 }
               });
             },
+            untilStdoutPasses: (
+              testName: string,
+              search: string,
+              test: (value: string, search: string) => boolean,
+              timeout: number = 0
+            ) => {
+              return _untilArrayTests(
+                testName,
+                "stdout",
+                search,
+                test,
+                timeout
+              );
+            },
+            untilStderrPasses: (
+              testName: string,
+              search: string,
+              test: (value: string, search: string) => boolean,
+              timeout: number = 0
+            ) => {
+              return _untilArrayTests(
+                testName,
+                "stderr",
+                search,
+                test,
+                timeout
+              );
+            },
             untilStdoutIncludes: (search: string, timeout: number = 0) => {
-              return _untilArrayIncludes("stdout", search, timeout);
+              return _untilArrayTests(
+                "includes",
+                "stdout",
+                search,
+                (value: string, search: string) => value.includes(search),
+                timeout
+              );
             },
             untilStderrIncludes: (search: string, timeout: number = 0) => {
-              return _untilArrayIncludes("stderr", search, timeout);
+              return _untilArrayTests(
+                "includes",
+                "stderr",
+                search,
+                (value: string, search: string) => value.includes(search),
+                timeout
+              );
+            },
+            untilStdoutEquals: (search: string, timeout: number = 0) => {
+              return _untilArrayTests(
+                "equals",
+                "stdout",
+                search,
+                (value: string, search: string) => value === search,
+                timeout
+              );
+            },
+            untilStderrEquals: (search: string, timeout: number = 0) => {
+              return _untilArrayTests(
+                "equals",
+                "stderr",
+                search,
+                (value: string, search: string) => value === search,
+                timeout
+              );
             },
           };
           return api;
