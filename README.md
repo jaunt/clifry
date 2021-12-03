@@ -16,7 +16,7 @@ Note: Clifry was created to test black-box test Airfry, a javascript static site
 
 ## How To Write Tests
 
-Clifry will run tests against a CLI that you specify as an argument. You write tests separate javascript files which Clifry will find and run through.
+Clifry will run tests against a CLI that you specify as an argument. You write tests as separate javascript files. Clifry will find and run through them.
 
 A clifry test file must accept an instance of the api object, and return a promise to resolve (pass) or reject (fail) the test.
 
