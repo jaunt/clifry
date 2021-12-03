@@ -4,17 +4,19 @@
 
 ## Design Philosophy
 
-This tool allows a way to black-box test a command line app by writing simple javascript code.
+Clifry is a tool to black-box test command line interpreter apps (CLIs) by writing simple javascript code.
 
-Instead of having to learn how to configure a taskrunner tool like grunt or gulp, the idea is to write simple javascript code with a very simple API related to running CLIs.
+Instead of having to learn how to configure a taskrunner tool like grunt or gulp, the idea here is to write javascript code with a very simple API honed for running and testing CLIs.
 
-It's up to you to use something like the standard unix dif tool or any node js module of your choosing to compare whatever your CLI creates, or if you're more interested in
-what it spits out to stdio or stder, you can use simple javascript to compare
-what you expected to what you saw.
+Clifry doesn't provide much in the way of actual domain specific testing functinlaity. It's up to you to use something like the standard unix diff tool if you want to compare human-readable file outputs, or any external tool you need depending on the nature of your CLI. You can easily require npm modules of your choosing in your javascript test files, as long as they are compatible with Node.js.
 
-Clifry was made to test black-box-test Airfy, a javascript static site generator.
+If you're only interested in what your CLI spits out to stdio or stder, you can use simple javascript to compare what you expected to what you saw.
 
-## Quickstart
+Clifry will always stay lean and minimal, by design.
+
+Note: Clifry was created to test black-box-test Airfry, a javascript static site generator. So it's battle tested in that way.
+
+## How To Write Tests
 
 Clifry will run tests against a CLI that you specify as an argument. You write each test in its own javascript file.
 
@@ -24,7 +26,7 @@ The API object passed to your test provides a minimal set of functions designed 
 
 Most of these functions are designed to be used with javascript's [async await mechanism.](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await)
 
-##### Example: run python interactively to make sure it can do math
+##### Example test.js file: run python interactively to make sure it can do math
 
 ```javascript
 const timeout = 5000;
@@ -77,6 +79,4 @@ Of course testing _stdout_ and _stderr_ is only one aspect of testing a CLI. In 
 
 Clifry is designed so that you include anything you need to test the domain specific data you are testing for within your javascript test files. You can use npm and require as you desire. Perhaps you want to compare audio or video files at each step of the test. There's probably an NPM for that!
 
-## API
-
-[Read the docs, created by Airfry](https://dangling.dev/airfry)
+## How to call Clifry
