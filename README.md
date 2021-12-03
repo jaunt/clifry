@@ -1,4 +1,4 @@
-# Clifry
+# [Clifry](https://github.com/jaunt/clifry)
 
 #### CLI Functional Testing tool powered by Node.JS
 
@@ -82,4 +82,25 @@ Clifry was written in typescript and so the test API documentation has been kept
 to easily show you the types of the interface. Your test files must be javascript, but if
 you want to write them in typescript you could always set that up in your test environment.
 
-## How to call Clifry
+## How to run Clifry
+
+Create a parent test folder in your project, then a child folder for each test you want to run.
+The child folder names become the test names you can run using the -t argument to Clifry.
+
+Call Clifry with the following arguments:
+
+**-f, --folder**
+
+The parent folder the Clifry will look for your tests (defaults to ./tests)
+
+**-t, --tests**
+
+One or more test names (folder names). If not specified, Clifry will run all that it finds.
+
+**-c, --cli**
+
+The path to the CLI you are testing (defaults to ./lib/cli.js)
+
+## Api
+
+####[Documentation](https://jaunt.github.io/clifry/classes/ClifryAPI.html)
