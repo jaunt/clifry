@@ -6,7 +6,6 @@ const log = loggers.log;
 const logError = loggers.logError;
 const { spawn } = require("child_process");
 var emitter = require("events").EventEmitter;
-const crypto = require("crypto");
 
 /**
  * Internal state for class
@@ -123,24 +122,26 @@ export class ClifryAPI {
     test: (line: string) => boolean,
     timeout: number
   ) {
-    const matchTestID = crypto.randomBytes(16).toString("hex");
     const _searchOutput = (
       search: string,
       test: (value: string) => boolean
     ) => {
-      if (!this.state.findIndex[matchTestID]) {
-        this.state.findIndex[matchTestID] = 0;
+      if (!this.state.findIndex[matchTestName + "_" + search]) {
+        this.state.findIndex[matchTestName + "_" + search] = 0;
       }
       if (!this.state.output[type]) return;
-      if (this.state.findIndex[matchTestID] == this.state.output[type].length)
+      if (
+        this.state.findIndex[matchTestName + "_" + search] ==
+        this.state.output[type].length
+      )
         return false;
       const index = this.state.output[type]
-        .slice(this.state.findIndex[matchTestID])
+        .slice(this.state.findIndex[matchTestName + "_" + search])
         .findIndex((value) => test(value));
-      this.state.findIndex[matchTestID] =
+      this.state.findIndex[matchTestName + "_" + search] =
         index == -1
           ? this.state.output[type].length
-          : index + this.state.findIndex[matchTestID] + 1;
+          : index + this.state.findIndex[matchTestName + "_" + search] + 1;
       return index != -1;
     };
     const state = this.state;
@@ -550,10 +551,17 @@ export class ClifryAPI {
   /**
    * Wait until a line of stdout passes the supplied test.
    *
-   * @param matchTestName a name describing your test func which is printed in the Clifry test log.
+   * @param matchTestName a name to describing your test func.
    * @param search The string you'd like the output to match exactly.
    * @param test This will be called for every output with the value of the line.  Return true if it passes your test.
    * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+   *
+   * @remarks
+   *
+   * matchTestName is used as an index any time you re-search with the same function and same search term.
+   * For example if you search and find something, then later you want to find something again, using the
+   * same matchTestName will tell Clifry that you want to start where the previous search left off,
+   * not start from the beginning of the entire output.
    *
    * @returns a promise that will resolve true if your test is passed, or false if it times out first.
    *
@@ -579,6 +587,13 @@ export class ClifryAPI {
    * @param search The string you'd like the output to match exactly.
    * @param test This will be called for every output with the value of the line.  Return true if it passes your test.
    * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+   *
+   * @remarks
+   *
+   * matchTestName is used as an index any time you re-search with the same function and same search term.
+   * For example if you search and find something, then later you want to find something again, using the
+   * same matchTestName will tell Clifry that you want to start where the previous search left off,
+   * not start from the beginning of the entire output.
    *
    * @returns a promise that will resolve true if your test is passed, or false if it times out first.
    *
