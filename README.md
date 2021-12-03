@@ -104,4 +104,4 @@ The path to the CLI you are testing (defaults to ./lib/cli.js)
 
 ## Api
 
-####[Documentation](https://jaunt.github.io/clifry/classes/ClifryAPI.html)
+#### [Documentation](https://jaunt.github.io/clifry/classes/ClifryAPI.html)
