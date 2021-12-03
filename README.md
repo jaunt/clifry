@@ -6,7 +6,7 @@
 
 Clifry is for black-box testing command line interpreter apps (CLIs).
 
-It's goal is to harness the simplicity of writing javascript offering a very simple workflow and API, honed for running and testing CLIs. Clifry is configuration 'light' and wants to get out of your way.
+Its goal is to make functional testing easy by harnessing the simplicity of writing javascript.  It offers a very simple workflow and API, honed for running and testing CLIs. Clifry is configuration-file-free, and wants to get out of your way.
 
 Clifry doesn't provide much in the way of domain specific testing functionality. It's up to you to use something like the standard unix diff tool if you want to compare human-readable file outputs, or any external tool you need depending on the nature of your CLI. You can easily require npm modules of your choosing in your javascript test files, as long as they are compatible with Node.JS.
 
@@ -72,7 +72,7 @@ const test = (CliFry) => {
 module.exports = test;
 ```
 
-Hopefully the above is somewhat self explanitory.
+Hopefully the above is somewhat self explanatory.
 
 Of course testing _stdout_ and _stderr_ is only one aspect of testing a CLI. In the case of Airfry, a static site generator, the clifry tests were written to use the unix diff command to compare site outputs at different stages. Refer to the [Airfry test folder in git](https://github.com/jaunt/airfryts/tree/main/tests) to see how it works.
 
