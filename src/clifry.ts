@@ -3,14 +3,10 @@ import { Command } from "commander";
 import chalk from "chalk";
 import fs from "fs";
 import fspath from "path";
-const { spawn } = require("child_process");
-
-import { Pinger, makeLoggers } from "./shared";
+import { makeLoggers } from "./shared";
 import { exit } from "process";
-import { triggerAsyncId } from "async_hooks";
-import { stringify } from "querystring";
 
-var emitter = require("events").EventEmitter;
+import { ClifryAPI } from "./api";
 
 const version = "0.0.1"; // todo get version from git tag
 
@@ -39,7 +35,6 @@ program.parse(process.argv);
 const options = program.opts();
 
 const findAllTests = function (dirPath: string): string[] {
-  // tests are any folders under the test directory
   const found: string[] = [];
   try {
     const files = fs.readdirSync(dirPath);
@@ -66,50 +61,22 @@ if (!tests) {
   exit();
 }
 
-const clearTimers = (state: any) => {
-  if (state.timeout) {
-    clearTimeout(state.timeout);
-    state.timeout = null;
+class ClifryAPIWrapper extends ClifryAPI {
+  cleanup() {
+    super._cleanupTest();
   }
-  if (state.pinger != null) {
-    state.pinger.stop();
-  }
-};
+}
 
-const cleanupTest = (state: any) => {
-  clearTimers(state);
-  if (state.process && state.process.exitCode == null) {
-    // remove all listeners and exit
-    state.process.removeAllListeners("exit");
-    state.process.removeAllListeners("close");
-    state.process.removeAllListeners("sstate.processawn");
-    state.process.removeAllListeners("data");
-    state.process.kill("SIGINT");
-    log("Force quitting CLI on cleanup");
-  }
-};
-
-const runTest = (testName: string) => {
+const runTest = (testName: string): Promise<string> => {
   return new Promise(async function (resolve, reject) {
     const testDir = fspath.resolve(options.folder + "/" + testName);
     let testModule = fspath.resolve(testDir + "/" + "test.js");
     const cmd = fspath.resolve(options.cli);
     const cwd = fspath.resolve(options.folder + "/" + testName);
-    let testState: any;
+    let api: ClifryAPIWrapper;
     try {
       const imported = await import(testModule);
       const test = imported.default;
-      type TesterState = {
-        process: any;
-        output: { [key: string]: string[] };
-        pinger: Pinger | null;
-        secondsIdle: number;
-        idleEmitter: any;
-        findIndex: { [key: string]: number };
-        name: string;
-        description: string;
-        result: string | null;
-      };
       const result = await test(
         (
           attr: {
@@ -121,328 +88,66 @@ const runTest = (testName: string) => {
         ) => {
           log("Test: " + attr.name);
           log("Description: " + attr.description);
-          const state: TesterState = {
-            process: null,
-            output: {} as { string: string[] },
-            pinger: null,
-            secondsIdle: 0,
-            idleEmitter: null,
-            findIndex: {} as { string: number },
-            name: attr.name || "",
-            description: attr.name || "",
-            result: null,
-          };
-
-          const _untilArrayTests = (
-            testName: string,
-            type: string,
-            search: string,
-            test: (value: string, search: string) => boolean,
-            timeout: number
-          ) => {
-            // optimized so that we don't keep checking the entire
-            // recorded output every time.  Can be called multiple times before
-            // or after a search string is found.  to find the next time the
-            // search occurs
-            const _searchOutput = (
-              search: string,
-              test: (value: string, search: string) => boolean
-            ) => {
-              if (!state.findIndex[search]) {
-                state.findIndex[search] = 0;
-              }
-              if (!state.output[type]) return;
-              if (state.findIndex[search] == state.output[type].length)
-                return false;
-              const index = state.output[type]
-                .slice(state.findIndex[search])
-                .findIndex((value) => test(value, search));
-              state.findIndex[search] =
-                index == -1
-                  ? state.output[type].length
-                  : index + state.findIndex[search] + 1;
-              return index != -1;
-            };
-            return new Promise(function (resolve, reject) {
-              if (!state.process) {
-                logError("Test has not started, no output to monitor.");
-                resolve(0);
-                return;
-              }
-              if (_searchOutput(search, test)) {
-                log(type + " already passes " + testName + " with " + search);
-                resolve(true);
-              } else {
-                log(
-                  "Waiting for " + type + " to " + testName + " with " + search
-                );
-                let _timeout: NodeJS.Timeout | null = null;
-                function _testOutput(data: Buffer) {
-                  if (_searchOutput(search, test)) {
-                    log("Output now passes " + testName + " with " + search);
-                    if (_timeout != null) {
-                      clearTimeout(_timeout);
-                    }
-                    state.process[type].removeListener("data", _testOutput);
-                    resolve(true);
-                  }
-                }
-                if (timeout) {
-                  log("Will timeout in " + timeout + " ms");
-                  _timeout = setTimeout(() => {
-                    log(
-                      "Timed out waiting for " +
-                        type +
-                        " to pass " +
-                        testName +
-                        " with " +
-                        search
-                    );
-                    state.process[type].removeListener("data", _testOutput);
-                    resolve(false);
-                  }, timeout);
-                }
-                state.process[type].on("data", _testOutput);
-              }
-            });
-          };
-
-          testState = state;
-          const api = {
-            dir: cwd,
-            start: () => {
-              if (state.process && state.process.exitCode == null) {
-                logError(
-                  "CLI Already started.  Use forceStop or wait until the process ends."
-                );
-                return;
-              }
-              log("Starting: " + cmd + " in " + cwd);
-              state.process = spawn(cmd, [...args], {
-                stdio: ["pipe", "pipe", "pipe"],
-                cwd: cwd,
-              });
-              state.process.on("spawn", () => {
-                log("CLI Started");
-                state.idleEmitter = new emitter();
-                state.pinger = new Pinger(
-                  "idleTimer",
-                  (id: string) => {
-                    state.secondsIdle++;
-                    state.idleEmitter.emit("tick", state.secondsIdle);
-                  },
-                  1000
-                );
-              });
-              state.process.stdout.on("data", (data: Buffer) => {
-                if (!state.output["stdout"]) {
-                  state.output["stdout"] = [];
-                }
-                state.output["stdout"].push(data.toString());
-                state.secondsIdle = 0;
-              });
-              state.process.stderr.on("data", (data: Buffer) => {
-                if (!state.output["stderr"]) {
-                  state.output["stderr"] = [];
-                }
-                state.output["stderr"].push(data.toString());
-                state.secondsIdle = 0;
-              });
-              state.process.on("close", (code: number, signal: string) => {
-                if (code) {
-                  log(`child process closed with code ${code}`);
-                }
-                if (signal) {
-                  log(
-                    `child process terminated due to receipt of signal ${signal}`
-                  );
-                }
-              });
-              state.process.on("exit", (code: number) => {
-                clearTimers(state);
-                if (code) {
-                  log(`child process exited with code ${code}`);
-                }
-              });
-            },
-            write: (txt: string) => {
-              state.process.stdin.write(txt + "\r\n");
-            },
-            stopped: (timeout: number) => {
-              return new Promise(function (resolve) {
-                if (!state.process) {
-                  logError("CLI has not started.");
-                  resolve(0);
-                } else if (state.process.exitCode != null) {
-                  log("CLI is already stopped");
-                  resolve(state.process.exitCode);
-                } else {
-                  log("Waiting for CLI to stop on its own.");
-                  let _timeout: NodeJS.Timeout | null = null;
-                  function _stopListener() {
-                    log("CLI stopped on its own.");
-                    if (_timeout != null) {
-                      clearTimeout(_timeout);
-                    }
-                    state.process.removeListener("exit", _stopListener);
-                    resolve(state.process.exitCode);
-                  }
-                  if (timeout) {
-                    log("Will timeout in " + timeout + " ms");
-                    _timeout = setTimeout(() => {
-                      log("Timed out waiting to stop.");
-                      state.process.removeListener("exit", _stopListener);
-                      resolve(124);
-                    }, timeout);
-                  }
-                  state.process.on("exit", _stopListener);
-                }
-              });
-            },
-            forceStop: () => {
-              if (state.process && state.process.exitCode == null) {
-                log("Passing SIGINT to process");
-                state.process.kill("SIGINT");
-              } else {
-                logError("CLI not running, nothing to force stop");
-              }
-            },
-            log: (message: string) => {
-              log("(" + state.name + ") " + message);
-            },
-            error: (message: string) => {
-              logError("(" + state.name + ") " + message);
-            },
-            sleep: (ms: number) => {
-              log("Sleeping for " + ms + "ms");
-              return new Promise((resolve) => setTimeout(resolve, ms));
-            },
-            waitUntilOutputIdleSeconds: (seconds: Number, timeout: number) => {
-              // wait number of seconds since last stdout or stderr
-              state.secondsIdle = 0;
-              return new Promise(function (resolve) {
-                if (!state.process) {
-                  logError("Test has not started, nothing to wait for.");
-                  resolve(0);
-                  return;
-                }
-                if (state.secondsIdle >= seconds) {
-                  log(
-                    "Output has already been idle for " + seconds + " seconds."
-                  );
-                  resolve(state.secondsIdle);
-                } else {
-                  log("Waiting for idle seconds " + seconds);
-                  let _timeout: NodeJS.Timeout | null = null;
-                  function idleChecker(s: number) {
-                    if (s >= seconds) {
-                      if (_timeout != null) {
-                        clearTimeout(_timeout);
-                      }
-                      log("Output has been idle for " + s + " seconds.");
-                      resolve(true);
-                    }
-                  }
-                  if (timeout) {
-                    log("Will timeout in " + timeout + " ms");
-                    _timeout = setTimeout(() => {
-                      log("Timed out waiting to stop.");
-                      state.idleEmitter.removeListener("tick", idleChecker);
-                      resolve(false);
-                    }, timeout);
-                  }
-                  state.idleEmitter.on("tick", idleChecker);
-                }
-              });
-            },
-            untilStdoutPasses: (
-              testName: string,
-              search: string,
-              test: (value: string, search: string) => boolean,
-              timeout: number = 0
-            ) => {
-              return _untilArrayTests(
-                testName,
-                "stdout",
-                search,
-                test,
-                timeout
-              );
-            },
-            untilStderrPasses: (
-              testName: string,
-              search: string,
-              test: (value: string, search: string) => boolean,
-              timeout: number = 0
-            ) => {
-              return _untilArrayTests(
-                testName,
-                "stderr",
-                search,
-                test,
-                timeout
-              );
-            },
-            untilStdoutIncludes: (search: string, timeout: number = 0) => {
-              return _untilArrayTests(
-                "includes",
-                "stdout",
-                search,
-                (value: string, search: string) => value.includes(search),
-                timeout
-              );
-            },
-            untilStderrIncludes: (search: string, timeout: number = 0) => {
-              return _untilArrayTests(
-                "includes",
-                "stderr",
-                search,
-                (value: string, search: string) => value.includes(search),
-                timeout
-              );
-            },
-            untilStdoutEquals: (search: string, timeout: number = 0) => {
-              return _untilArrayTests(
-                "equals",
-                "stdout",
-                search,
-                (value: string, search: string) => value === search,
-                timeout
-              );
-            },
-            untilStderrEquals: (search: string, timeout: number = 0) => {
-              return _untilArrayTests(
-                "equals",
-                "stderr",
-                search,
-                (value: string, search: string) => value === search,
-                timeout
-              );
-            },
-          };
+          api = new ClifryAPIWrapper(
+            cmd,
+            cwd,
+            attr.name,
+            attr.description,
+            args
+          );
           return api;
         }
       );
-      testState.result = result;
-      resolve(testState);
+      api!.cleanup();
+      resolve(result);
     } catch (error) {
-      if (!testState) {
-        testState = {};
-      }
-      testState.result = error;
-      reject(testState);
+      reject(error);
     }
   });
 };
 
-tests.forEach((testName: string) => {
-  runTest(testName)
-    .then((testState: any) => {
-      cleanupTest(testState);
-      log("Test Resolved With:", testState.result);
+let count = tests.length;
+
+let results: { name: string; passed: boolean; message: string }[] = [];
+
+let failed = false;
+
+const checkDone = () => {
+  count--;
+  if (count == 0) {
+    log("\n\nTesting summary:");
+    if (failed) {
+      log(chalk.red(JSON.stringify(results, null, "\t")));
+    } else {
+      log(chalk.green(JSON.stringify(results, null, "\t")));
+    }
+    if (failed) {
+      exit(1);
+    } else {
+      exit(0);
+    }
+  }
+};
+
+tests.forEach((name: string) => {
+  runTest(name)
+    .then((result: string) => {
+      log("Test Resolved With:", result);
+      results.push({
+        name: name,
+        passed: true,
+        message: result,
+      });
+      checkDone();
     })
-    .catch((testState: any) => {
-      cleanupTest(testState);
-      logError("Test Rejected With:", testState.result);
+    .catch((result: string) => {
+      failed = true;
+      logError("Test Rejected With:", result);
+      results.push({
+        name: name,
+        passed: false,
+        message: result,
+      });
+      checkDone();
     });
 });
