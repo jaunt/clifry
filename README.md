@@ -22,10 +22,10 @@ A clifry test file must accept an instance of the api object, and return a promi
 
 The API object passed to your test provides a minimal set of functions designed to make it easy to interact with your CLI for functional testing purposes.
 
-Most of these functions are designed to be used with javascript's [async await mechanism.](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await), in order to keep the flow
+Most of these functions are designed to be used with javascript's [async await mechanism](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await), in order to keep the flow
 of your tests clean and easy to read.
 
-##### Example test.js file: run python interactively to make sure it can do math
+##### Example test.js file: Run python interactively to make sure it can do math!
 
 ```javascript
 const timeout = 5000;
@@ -71,18 +71,19 @@ const test = (CliFry) => {
 };
 module.exports = test;
 ```
-
 Hopefully the above is somewhat self explanatory.
 
-Of course testing _stdout_ and _stderr_ is only one aspect of testing a CLI. In the case of Airfry, a static site generator, the clifry tests were written to use the unix diff command to compare site outputs at different stages. Refer to the [Airfry test folder in git](https://github.com/jaunt/airfryts/tree/main/tests) to see how it works.
+Of course testing _stdout_ and _stderr_ is only one aspect of testing a CLI. In the case of Airfry, a static site generator, the clifry tests were written to use the unix diff command to compare site outputs at different points in time. Refer to the [Airfry test folder in git](https://github.com/jaunt/airfryts/tree/main/tests) to see how it works.
 
-Clifry is designed so that you include anything you need to test the domain specific data you are testing for within your javascript test files. You can use npm and require as you desire. Perhaps you want to compare audio or video files at each step of the test. There's probably an npm module for that!
+Clifry is designed so that you include the 3rd party libraries you need to test the domain specific data you are testing for within your javascript test files. You can use npm and require as you desire. Perhaps you want to compare audio or video files at each step of the test. There's probably an npm module for that!
 
 Clifry was written in typescript and so the test API documentation has been kept that way
-to easily show you the types of the interface. Your test files must be javascript, but if
+to show you the types of the interface. Your test files must be javascript, but if
 you want to write them in typescript you could always set that up in your test environment.
 
 ## How to run Clifry
+
+TODO -> NPM INSTALL INSTRUCTIONS
 
 Create a parent test folder in your project, then a child folder for each test you want to run.
 The child folder names become the test names you can run using the -t argument to Clifry.
