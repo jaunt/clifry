@@ -25,27 +25,27 @@ type TestRunState = {
 
 export class ClifryAPI {
   /**
-   * The working directory of the test
+   * The working directory of the test.  Use this if you are loading or storing files as a part of your test.
    * @readonly
    */
   readonly dir: string;
 
   /**
-   * The command used to call the cli
+   * The command used to call your CLI.
    *
    * @internal
    */
   readonly cmd: string;
 
   /**
-   * Args used to call cli
+   * The args used to call your CLI.
    *
    * @internal
    */
   readonly args: string[];
 
   /**
-   * Internal state for class
+   * Internal state for class.
    *
    * @internal
    */
@@ -79,7 +79,7 @@ export class ClifryAPI {
   }
 
   /**
-   * Clean up  timers
+   * Clean up timers.
    *
    * @internal
    */
@@ -90,7 +90,7 @@ export class ClifryAPI {
   }
 
   /**
-   * Clean up any listeners on our process
+   * Clean up any listeners on our process.
    *
    * @internal
    */
@@ -115,51 +115,47 @@ export class ClifryAPI {
    *
    * @internal
    */
+  // matchTestName + "_" + search
+  //  matchTestName + " with " + search
   private _untilArrayTests(
-    matchTestName: string,
+    testID: string,
+    description: string,
     type: string,
-    search: string,
     test: (line: string) => boolean,
     timeout: number
   ) {
-    const _searchOutput = (
-      search: string,
-      test: (value: string) => boolean
-    ) => {
-      if (!this.state.findIndex[matchTestName + "_" + search]) {
-        this.state.findIndex[matchTestName + "_" + search] = 0;
+    const _searchOutput = (test: (value: string) => boolean) => {
+      if (!this.state.findIndex[testID]) {
+        this.state.findIndex[testID] = 0;
       }
       if (!this.state.output[type]) return;
-      if (
-        this.state.findIndex[matchTestName + "_" + search] ==
-        this.state.output[type].length
-      )
+      if (this.state.findIndex[testID] == this.state.output[type].length)
         return false;
       const index = this.state.output[type]
-        .slice(this.state.findIndex[matchTestName + "_" + search])
+        .slice(this.state.findIndex[testID])
         .findIndex((value) => test(value));
-      this.state.findIndex[matchTestName + "_" + search] =
+      this.state.findIndex[testID] =
         index == -1
           ? this.state.output[type].length
-          : index + this.state.findIndex[matchTestName + "_" + search] + 1;
+          : index + this.state.findIndex[testID] + 1;
       return index != -1;
     };
     const state = this.state;
     return new Promise(function (resolve) {
       if (!state.process) {
-        logError("Test has not started, no output to monitor.");
+        logError("You CLI has not started, cannot run " + description);
         resolve(0);
         return;
       }
-      if (_searchOutput(search, test)) {
-        log(type + " already passes " + matchTestName + " with " + search);
+      if (_searchOutput(test)) {
+        log(type + " already passes " + description);
         resolve(true);
       } else {
-        log("Waiting for " + type + " to " + matchTestName + " with " + search);
+        log("Waiting for " + type + " to " + description);
         let _timeout: NodeJS.Timeout | null = null;
         function _testOutput(data: Buffer) {
-          if (_searchOutput(search, test)) {
-            log("Output now passes " + matchTestName + " with " + search);
+          if (_searchOutput(test)) {
+            log("Output now passes " + description);
             if (_timeout != null) {
               clearTimeout(_timeout);
             }
@@ -170,14 +166,7 @@ export class ClifryAPI {
         if (timeout) {
           log("Will timeout in " + timeout + " ms");
           _timeout = setTimeout(() => {
-            log(
-              "Timed out waiting for " +
-                type +
-                " to pass " +
-                matchTestName +
-                " with " +
-                search
-            );
+            log("Timed out waiting for " + type + " to pass " + description);
             state.process[type].removeListener("data", _testOutput);
             resolve(false);
           }, timeout);
@@ -188,7 +177,7 @@ export class ClifryAPI {
   }
 
   /**
-   * Check if process has started and is running
+   * Check if your CLI process has started and is running.
    *
    * @internal
    */
@@ -197,7 +186,7 @@ export class ClifryAPI {
   }
 
   /**
-   * Check if process has started and has stopped
+   * Check if your CLI process has started and has subsequently stopped.
    *
    * @internal
    */
@@ -206,11 +195,11 @@ export class ClifryAPI {
   }
 
   /**
-   * Starts the CLI being tested
+   * Starts your CLI process and begins the test.
    *
-   * @param [timeout] Timeout ms while waiting for the CLI to start.
+   * @param [timeout] Max time to wait for your CLI to start (ms).
    *
-   * @returns A promise that will resolve 'true' when the cli starts, or 'false' if it fails to do so before the timeout specified..
+   * @returns A promise that will resolve **true** when your CLI starts, or **false** if it fails to do so before the timeout specified.
    *
    */
   start(timeout: number = 0) {
@@ -290,9 +279,9 @@ export class ClifryAPI {
   }
 
   /**
-   * Writes a line to stdin of the CLI being tested.
+   * Writes a line to your CLI's stdin.
    *
-   * * @param txt the text to write to stdin, no need for newline or carriage return
+   * * @param txt the text to write to stdin (no need for newline or carriage return).
    *
    */
   write(txt: string) {
@@ -300,9 +289,9 @@ export class ClifryAPI {
   }
 
   /**
-   * Waits until the CLI stops on its own, or is already stopped.
+   * Waits until your CLI stops on its own, or is already stopped.
    *
-   * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+   * @param [timeout] Max time to wait for your CLI to stop on its own (ms).
    *
    * @returns A promise that will resolve with the CLI's exit code, or 124 if it timed out shutting down.
    *
@@ -363,7 +352,7 @@ export class ClifryAPI {
   }
 
   /**
-   * Sends SIGINT to the CLI.
+   * Sends SIGINT to your CLI.
    */
   forceStop() {
     if (this.state.process && this.state.process.exitCode == null) {
@@ -374,12 +363,11 @@ export class ClifryAPI {
     }
   }
   /**
-   * Writes a log message to Clifry's console log output.
+   * Writes a message to Clifry's console log output.
    *
    * @remarks
    *
-   * Monitoring Clifry's log is how you see information during the testing process.
-   * This function allows for custom information to be printed during your tests.
+   * You can monitor Clifry's test log to help debug problems during your test.
    *
    * @param message The message to print.
    *
@@ -388,12 +376,11 @@ export class ClifryAPI {
     log("(" + this.state.name + ") " + message);
   }
   /**
-   * Writes a log message to Clifry's console error output.
+   * Writes an error log message to Clifry's console output.
    *
    * @remarks
    *
-   * Monitoring Clifry's error log to see information about problems during a test.
-   * This allows function allows for custom error information to be printed during your tests.
+   * You can monitor Clifry's test log to help debug problems during your test.
    *
    * @param message The error message to print.
    *
@@ -402,7 +389,7 @@ export class ClifryAPI {
     logError("(" + this.state.name + ") " + message);
   }
   /**
-   * Do nothing for a period of time in case you need to wait for the CLI to process.
+   * Do nothing for a period of time in case you need to wait for your CLI.
    *
    * @param ms The number of ms to sleep for.
    *
@@ -414,12 +401,12 @@ export class ClifryAPI {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
   /**
-   * Wait until the stdout and stderr have been quiet for N seconds.
+   * Wait until your CLI's stdout and stderr have been quiet for N seconds.
    *
-   * @param seconds The desired number of seconds of idle time
-   * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+   * @param seconds The desired number of seconds of idle time.
+   * @param [timeout] Max time to wait for your CLI to become idle (ms).
    *
-   * @returns A promise that will resolve true if the CLI becomes idle for the desired time, false if it times out first.
+   * @returns A promise that will resolve **true** if the CLI becomes idle for the desired time, **false** if it times out first.
    *
    */
   untilOutputIdleSeconds(seconds: Number, timeout: number = 0) {
@@ -460,26 +447,26 @@ export class ClifryAPI {
     });
   }
   /**
-   * Wait until a line of stdout includes the search string (using javascript string.includes)
+   * Wait until a line of stdout includes the search string (using javascript string.includes).
    *
    * @remarks
    *
    * Example:
    * If you wanted to wait until your CLI outputted: "At 10:23am, the CLI completed job #124789124987,
-   * but you only cared about a portion of that line, you could call:
-   * await untilStdoutIncludes("the CLI completed job")
+   * but you only cared about a portion of that line, using a search parameter of "the CLI completed job"
+   * would return true.
    *
    * @param search The string you'd like the output to include.
-   * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+   * @param [timeout] Max time to wait for a match (ms).
    *
-   * @returns a promise that will resolve true if a match is found or false if it times out first.
+   * @returns a promise that will resolve **true** if a match is found or **false** if it times out first.
    *
    */
   untilStdoutIncludes(search: string, timeout: number = 0) {
     return this._untilArrayTests(
-      "includes",
+      "includes_" + search,
+      "includes " + search,
       "stdout",
-      search,
       (value: string) => value.includes(search),
       timeout
     );
@@ -489,32 +476,29 @@ export class ClifryAPI {
 	 *
 	 * @remarks
 	 *
-	 * Example:
-	 * If you wanted to wait until your CLI outputted: "At 10:23am, the CLI completed job #124789124987,
-	 * but you only cared about a portion of that line, you could call:
-	 * await untilStdoutIncludes("the CLI completed job")
+	 * See untilStdoutIncludes for example usage.
 	 *
 	 * @param search The string you'd like the output to include.
-	 * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+	 * @param [timeout] Max time to wait for a match (ms).
 
 	 *
-	 * @returns a promise that will resolve true if a match is found or false if it times out first.
+	 * @returns a promise that will resolve **true** if a match is found or **false** if it times out first.
 	 *
 	 */
   untilStderrIncludes(search: string, timeout: number = 0) {
     return this._untilArrayTests(
-      "includes",
+      "includes_" + search,
+      "includes " + search,
       "stderr",
-      search,
       (line: string) => line.includes(search),
       timeout
     );
   }
   /**
-	 * Wait until a line of stdout matches exactly search string
+	 * Wait until a line of stdout matches your search string exactly.
 	 *
-	 * @param search The string you'd like the output match exactly.
-	 * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+	 * @param search The string you'd like stdout to match exactly.
+	 * @param [timeout] Max time to wait for a match (ms).
 
 	 *
 	 * @returns a promise that will resolve true if a match is found or false if it times out first.
@@ -522,18 +506,18 @@ export class ClifryAPI {
 	 */
   untilStdoutEquals(search: string, timeout: number = 0) {
     return this._untilArrayTests(
-      "equals",
+      "equals_" + search,
+      "equals " + search,
       "stdout",
-      search,
       (line: string) => line === search,
       timeout
     );
   }
   /**
-	 * Wait until a line of stderr matches exactly search string
+	 * Wait until a line of stderr matches your search string exactly.
 	 *
-	 * @param search The string you'd like the output to match exactly.
-	 * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+	 * @param search The string you'd like stderr to match exactly.
+	 * @param [timeout] Max time to wait for a match (ms).
 
 	 *
 	 * @returns a promise that will resolve true if a match is found or false if it times out first.
@@ -541,75 +525,59 @@ export class ClifryAPI {
 	 */
   untilStderrEquals(search: string, timeout: number = 0) {
     return this._untilArrayTests(
-      "equals",
+      "equals_" + search,
+      "equals " + search,
       "stderr",
-      search,
       (line: string) => line === search,
       timeout
     );
   }
   /**
-   * Wait until a line of stdout passes the supplied test.
+   * Wait until a line of your CLI's stdout passes your supplied matching function.
    *
-   * @param matchTestName a name to describing your test func.
-   * @param search The string you'd like the output to match exactly.
-   * @param test This will be called for every output with the value of the line.  Return true if it passes your test.
-   * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+   * @param uniqueID This is required to enable calling your test multiple times throughout the course of a test.
+   * @param logMessage This will be printed in CliFry's log and should be short but descriptive, so that you can see clearly when your function passed or failed.
+   * @param matchFunc This will be called for every line of your CLI's output.  Return true if the line was matched by your function.
+   * @param [timeout] Max time to wait for a pass (ms).
    *
    * @remarks
    *
-   * matchTestName is used as an index any time you re-search with the same function and same search term.
+   * uniqueID is used as an index any time you re-search with the same function.
    * For example if you search and find something, then later you want to find something again, using the
-   * same matchTestName will tell Clifry that you want to start where the previous search left off,
-   * not start from the beginning of the entire output.
+   * same uniqueID will tell Clifry that you want to start where the previous search left off rather than starting again from the beginning of the entire output.
    *
-   * @returns a promise that will resolve true if your test is passed, or false if it times out first.
+   * @returns a promise that will resolve **true** if your test is passed, or **false** if it times out first.
    *
    */
   untilStdoutPasses(
-    matchTestName: string,
-    search: string,
+    uniqueID: string,
+    logMessage: string,
     test: (line: string) => boolean,
     timeout: number = 0
   ) {
-    return this._untilArrayTests(
-      matchTestName,
-      "stdout",
-      search,
-      test,
-      timeout
-    );
+    return this._untilArrayTests(uniqueID, logMessage, "stdout", test, timeout);
   }
   /**
-   * Wait until a line of stderr passes the supplied test.
+   * Wait until a line of your CLI's stderr passes your supplied matching function.
    *
-   * @param matchTestName a name describing your test func which is printed in the Clifry test log.
-   * @param search The string you'd like the output to match exactly.
-   * @param test This will be called for every output with the value of the line.  Return true if it passes your test.
-   * @param [timeout] Timeout ms while waiting for the CLI to be stopped.
+   * @param uniqueID This is required to enable calling your test multiple times throughout the course of a test.
+   * @param logMessage This will be printed in CliFry's log and should be short but descriptive, so that you can see clearly when your function passed or failed.
+   * @param matchFunc This will be called for every line of your CLI's output.  Return true if the line was matched by your function.
+   * @param [timeout] Max time to wait for a match (ms).
    *
    * @remarks
    *
-   * matchTestName is used as an index any time you re-search with the same function and same search term.
-   * For example if you search and find something, then later you want to find something again, using the
-   * same matchTestName will tell Clifry that you want to start where the previous search left off,
-   * not start from the beginning of the entire output.
+   * See untilStdoutPasses for example isage.
    *
-   * @returns a promise that will resolve true if your test is passed, or false if it times out first.
+   * @returns a promise that will resolve **true** if your test is passed, or **false** if it times out first.
    *
    */
   untilStderrPasses(
-    matchTestName: string,
-    search: string,
+    uniqueID: string,
+    logMessage: string,
     test: (line: string) => boolean,
     timeout: number = 0
   ) {
-    return this._untilArrayTests(
-      matchTestName,
-      "stderr",
-      search,
-      test,
-      timeout
-    );
+    return this._untilArrayTests(uniqueID, logMessage, "stderr", test, timeout);
   }
 }
