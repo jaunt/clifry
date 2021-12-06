@@ -197,7 +197,7 @@ export class ClifryAPI {
   /**
    * Starts your CLI process and begins the test.
    *
-   * @param [timeout] Max time to wait for your CLI to start (ms).
+   * @param timeout  Optional:  Max time to wait for your CLI to start (ms).
    *
    * @returns A promise that will resolve **true** when your CLI starts, or **false** if it fails to do so before the timeout specified.
    *
@@ -291,7 +291,7 @@ export class ClifryAPI {
   /**
    * Waits until your CLI stops on its own, or is already stopped.
    *
-   * @param [timeout] Max time to wait for your CLI to stop on its own (ms).
+   * @param timeout  Optional:  Max time to wait for your CLI to stop on its own (ms).
    *
    * @returns A promise that will resolve with the CLI's exit code, or 124 if it timed out shutting down.
    *
@@ -404,7 +404,7 @@ export class ClifryAPI {
    * Wait until your CLI's stdout and stderr have been quiet for N seconds.
    *
    * @param seconds The desired number of seconds of idle time.
-   * @param [timeout] Max time to wait for your CLI to become idle (ms).
+   * @param timeout  Optional:  Max time to wait for your CLI to become idle (ms).
    *
    * @returns A promise that will resolve **true** if the CLI becomes idle for the desired time, **false** if it times out first.
    *
@@ -457,7 +457,7 @@ export class ClifryAPI {
    * would return true.
    *
    * @param search The string you'd like the output to include.
-   * @param [timeout] Max time to wait for a match (ms).
+   * @param timeout  Optional:  Max time to wait for a match (ms).
    *
    * @returns a promise that will resolve **true** if a match is found or **false** if it times out first.
    *
@@ -476,10 +476,10 @@ export class ClifryAPI {
 	 *
 	 * @remarks
 	 *
-	 * See untilStdoutIncludes for example usage.
+	 * See [[untilStdoutIncludes]] for example usage.
 	 *
 	 * @param search The string you'd like the output to include.
-	 * @param [timeout] Max time to wait for a match (ms).
+	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
 	 * @returns a promise that will resolve **true** if a match is found or **false** if it times out first.
@@ -498,7 +498,7 @@ export class ClifryAPI {
 	 * Wait until a line of stdout matches your search string exactly.
 	 *
 	 * @param search The string you'd like stdout to match exactly.
-	 * @param [timeout] Max time to wait for a match (ms).
+	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
 	 * @returns a promise that will resolve true if a match is found or false if it times out first.
@@ -517,7 +517,7 @@ export class ClifryAPI {
 	 * Wait until a line of stderr matches your search string exactly.
 	 *
 	 * @param search The string you'd like stderr to match exactly.
-	 * @param [timeout] Max time to wait for a match (ms).
+	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
 	 * @returns a promise that will resolve true if a match is found or false if it times out first.
@@ -538,7 +538,7 @@ export class ClifryAPI {
    * @param uniqueID This is required to enable calling your test multiple times throughout the course of a test.
    * @param logMessage This will be printed in CliFry's log and should be short but descriptive, so that you can see clearly when your function passed or failed.
    * @param matchFunc This will be called for every line of your CLI's output.  Return true if the line was matched by your function.
-   * @param [timeout] Max time to wait for a pass (ms).
+   * @param timeout  Optional:  Max time to wait for a pass (ms).
    *
    * @remarks
    *
@@ -563,11 +563,11 @@ export class ClifryAPI {
    * @param uniqueID This is required to enable calling your test multiple times throughout the course of a test.
    * @param logMessage This will be printed in CliFry's log and should be short but descriptive, so that you can see clearly when your function passed or failed.
    * @param matchFunc This will be called for every line of your CLI's output.  Return true if the line was matched by your function.
-   * @param [timeout] Max time to wait for a match (ms).
+   * @param timeout  Optional:  Max time to wait for a match (ms).
    *
    * @remarks
    *
-   * See untilStdoutPasses for example isage.
+   * See [[untilStdoutPasses]] for example isage.
    *
    * @returns a promise that will resolve **true** if your test is passed, or **false** if it times out first.
    *
