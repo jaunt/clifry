@@ -3,6 +3,10 @@
   <h1><a href="https://github.com/jaunt/clifry">Clifry</a></h1>
 </a>
 
+<a href="#pre-alpha-under-active-development" id="pre-alpha-under-active-development" style="color: inherit; text-decoration: none;">
+  <h1>PRE-ALPHA UNDER ACTIVE DEVELOPMENT</h1>
+</a>
+
 <a href="#cli-functional-testing-tool-powered-by-nodejs" id="cli-functional-testing-tool-powered-by-nodejs" style="color: inherit; text-decoration: none;">
   <h4>CLI Functional Testing tool powered by Node.JS</h4>
 </a>
@@ -11,7 +15,7 @@
   <h2>Design Philosophy</h2>
 </a>
 <p>Clifry is for black-box testing command line interpreter apps (CLIs).</p>
-<p>It&#39;s goal is to harness the simplicity of writing javascript offering a very simple workflow and API, honed for running and testing CLIs. Clifry is configuration &#39;light&#39; and wants to get out of your way.</p>
+<p>Its goal is to make functional testing easy by harnessing the simplicity of writing javascript. It offers a very simple workflow and API, honed for running and testing CLIs. Clifry is configuration-file-free, and wants to get out of your way.</p>
 <p>Clifry doesn&#39;t provide much in the way of domain specific testing functionality. It&#39;s up to you to use something like the standard unix diff tool if you want to compare human-readable file outputs, or any external tool you need depending on the nature of your CLI. You can easily require npm modules of your choosing in your javascript test files, as long as they are compatible with Node.JS.</p>
 <p>Clifry will always stay lean and minimal, by design.</p>
 <p>Note: Clifry was created to test black-box test Airfry, a javascript static site generator. So it&#39;s battle tested in that way.</p>
@@ -19,39 +23,46 @@
 <a href="#how-to-write-tests" id="how-to-write-tests" style="color: inherit; text-decoration: none;">
   <h2>How To Write Tests</h2>
 </a>
-<p>Clifry will run tests against a CLI that you specify as an argument. You write tests separate javascript files which Clifry will find and run through.</p>
+<p>Clifry will run tests against a CLI that you specify as an argument. You write tests as separate javascript files. Clifry will find and run through them.</p>
 <p>A clifry test file must accept an instance of the api object, and return a promise to resolve (pass) or reject (fail) the test.</p>
 <p>The API object passed to your test provides a minimal set of functions designed to make it easy to interact with your CLI for functional testing purposes.</p>
-<p>Most of these functions are designed to be used with javascript&#39;s <a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await">async await mechanism.</a>, in order to keep the flow
+<p>Most of these functions are designed to be used with javascript&#39;s <a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await">async await mechanism</a>, in order to keep the flow
 of your tests clean and easy to read.</p>
 
 <a href="#example-testjs-file-run-python-interactively-to-make-sure-it-can-do-math" id="example-testjs-file-run-python-interactively-to-make-sure-it-can-do-math" style="color: inherit; text-decoration: none;">
-  <h5>Example test.js file: run python interactively to make sure it can do math</h5>
+  <h5>Example test.js file: Run python interactively to make sure it can do math!</h5>
 </a>
 <pre><code class="language-javascript"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">timeout</span><span class="hl-1"> = </span><span class="hl-3">5000</span><span class="hl-1">;</span><br/><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-4">test</span><span class="hl-1"> = (</span><span class="hl-5">CliFry</span><span class="hl-1">) </span><span class="hl-0">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-6">return</span><span class="hl-1"> </span><span class="hl-0">new</span><span class="hl-1"> </span><span class="hl-7">Promise</span><span class="hl-1">(</span><span class="hl-0">async</span><span class="hl-1"> </span><span class="hl-0">function</span><span class="hl-1"> (</span><span class="hl-5">resolve</span><span class="hl-1">, </span><span class="hl-5">reject</span><span class="hl-1">) {</span><br/><span class="hl-1">    </span><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">testRun</span><span class="hl-1"> = </span><span class="hl-4">CliFry</span><span class="hl-1">(</span><br/><span class="hl-1">      {</span><br/><span class="hl-1">        </span><span class="hl-5">name:</span><span class="hl-1"> </span><span class="hl-8">&quot;Simple Test&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">        </span><span class="hl-5">description:</span><span class="hl-1"> </span><span class="hl-8">&quot;Run python, do some math, exit.&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">      },</span><br/><span class="hl-1">      </span><span class="hl-9">// arguments</span><br/><span class="hl-1">      [</span><span class="hl-8">&quot;-i&quot;</span><span class="hl-1">, </span><span class="hl-8">&quot;-q&quot;</span><span class="hl-1">]</span><br/><span class="hl-1">    );</span><br/><span class="hl-1">    </span><span class="hl-5">testRun</span><span class="hl-1">.</span><span class="hl-4">start</span><span class="hl-1">();</span><br/><br/><span class="hl-1">    </span><span class="hl-0">let</span><span class="hl-1"> </span><span class="hl-5">success</span><span class="hl-1">;</span><br/><br/><span class="hl-1">    </span><span class="hl-5">success</span><span class="hl-1"> = </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-5">testRun</span><span class="hl-1">.</span><span class="hl-4">untilStderrIncludes</span><span class="hl-1">(</span><span class="hl-8">&quot;&gt;&gt;&gt;&quot;</span><span class="hl-1">, </span><span class="hl-5">timeout</span><span class="hl-1">);</span><br/><br/><span class="hl-1">    </span><span class="hl-6">if</span><span class="hl-1"> (!</span><span class="hl-5">success</span><span class="hl-1">) {</span><br/><span class="hl-1">      </span><span class="hl-4">reject</span><span class="hl-1">(</span><span class="hl-8">&quot;Did not get python prompt&quot;</span><span class="hl-1">);</span><br/><span class="hl-1">      </span><span class="hl-6">return</span><span class="hl-1">;</span><br/><span class="hl-1">    }</span><br/><br/><span class="hl-1">    </span><span class="hl-5">testRun</span><span class="hl-1">.</span><span class="hl-4">write</span><span class="hl-1">(</span><span class="hl-8">&quot;10+10&quot;</span><span class="hl-1">);</span><br/><br/><span class="hl-1">    </span><span class="hl-5">success</span><span class="hl-1"> = </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-5">testRun</span><span class="hl-1">.</span><span class="hl-4">untilStdoutIncludes</span><span class="hl-1">(</span><span class="hl-8">&quot;20&quot;</span><span class="hl-1">, </span><span class="hl-3">2000</span><span class="hl-1">);</span><br/><br/><span class="hl-1">    </span><span class="hl-6">if</span><span class="hl-1"> (!</span><span class="hl-5">success</span><span class="hl-1">) {</span><br/><span class="hl-1">      </span><span class="hl-4">reject</span><span class="hl-1">(</span><span class="hl-8">&quot;Python does not know math.&quot;</span><span class="hl-1">);</span><br/><span class="hl-1">    }</span><br/><br/><span class="hl-1">    </span><span class="hl-5">testRun</span><span class="hl-1">.</span><span class="hl-4">write</span><span class="hl-1">(</span><span class="hl-8">&quot;exit()&quot;</span><span class="hl-1">);</span><br/><br/><span class="hl-1">    </span><span class="hl-5">success</span><span class="hl-1"> = </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-5">testRun</span><span class="hl-1">.</span><span class="hl-4">stopped</span><span class="hl-1">(</span><span class="hl-5">timeout</span><span class="hl-1">);</span><br/><br/><span class="hl-1">    </span><span class="hl-6">if</span><span class="hl-1"> (!</span><span class="hl-5">success</span><span class="hl-1">) {</span><br/><span class="hl-1">      </span><span class="hl-4">reject</span><span class="hl-1">(</span><span class="hl-8">&quot;Python would not shutdown gracefully&quot;</span><span class="hl-1">);</span><br/><span class="hl-1">    } </span><span class="hl-6">else</span><span class="hl-1"> {</span><br/><span class="hl-1">      </span><span class="hl-4">resolve</span><span class="hl-1">(</span><span class="hl-8">&quot;Python is great!&quot;</span><span class="hl-1">);</span><br/><span class="hl-1">    }</span><br/><span class="hl-1">  });</span><br/><span class="hl-1">};</span><br/><span class="hl-7">module</span><span class="hl-1">.</span><span class="hl-7">exports</span><span class="hl-1"> = </span><span class="hl-5">test</span><span class="hl-1">;</span>
 </code></pre>
-<p>Hopefully the above is somewhat self explanitory.</p>
-<p>Of course testing <em>stdout</em> and <em>stderr</em> is only one aspect of testing a CLI. In the case of Airfry, a static site generator, the clifry tests were written to use the unix diff command to compare site outputs at different stages. Refer to the <a href="https://github.com/jaunt/airfryts/tree/main/tests">Airfry test folder in git</a> to see how it works.</p>
-<p>Clifry is designed so that you include anything you need to test the domain specific data you are testing for within your javascript test files. You can use npm and require as you desire. Perhaps you want to compare audio or video files at each step of the test. There&#39;s probably an npm module for that!</p>
+<p>Hopefully the above is somewhat self explanatory.</p>
+<p>Of course testing <em>stdout</em> and <em>stderr</em> is only one aspect of testing a CLI. In the case of Airfry, a static site generator, the clifry tests were written to use the unix diff command to compare site outputs at different points in time. Refer to the <a href="https://github.com/jaunt/airfryts/tree/main/tests">Airfry test folder in git</a> to see how it works.</p>
+<p>Clifry is designed so that you include the 3rd party libraries you need to test the domain specific data you are testing for within your javascript test files. You can use npm and require as you desire. Perhaps you want to compare audio or video files at each step of the test. There&#39;s probably an npm module for that!</p>
 <p>Clifry was written in typescript and so the test API documentation has been kept that way
-to easily show you the types of the interface. Your test files must be javascript, but if
-you want to write them in typescript you could always set that up in your test environment.</p>
+to show you the types of the interface. Your test files must be javascript, but if
+you want to write them in typescript you could always set up a pre-compile step in your environment.</p>
 
 <a href="#how-to-run-clifry" id="how-to-run-clifry" style="color: inherit; text-decoration: none;">
   <h2>How to run Clifry</h2>
 </a>
-<p>Create a parent test folder in your project, then a child folder for each test you want to run.
-The child folder names become the test names you can run using the -t argument to Clifry.</p>
-<p>Call Clifry with the following arguments:</p>
+<p>TODO -&gt; NPM INSTALL INSTRUCTIONS</p>
+<p>Create a parent test folder in your project, then create a child folder for each test you want to run.</p>
+<p>The child folder names become the test names you can run using the Clifry&#39;s -t argument.</p>
+
+<a href="#optionally-call-clifry-with-the-following-arguments" id="optionally-call-clifry-with-the-following-arguments" style="color: inherit; text-decoration: none;">
+  <h4>Optionally call Clifry with the following arguments:</h4>
+</a>
 <p><strong>-f, --folder</strong></p>
-<p>The parent folder the Clifry will look for your tests (defaults to ./tests)</p>
+<p>The parent folder for all of your child test folders (defaults to ./tests)</p>
 <p><strong>-t, --tests</strong></p>
-<p>One or more test names (folder names). If not specified, Clifry will run all that it finds.</p>
+<p>One or more test names (folder names). If not specified, Clifry will run all that it finds in the parent test folder.</p>
 <p><strong>-c, --cli</strong></p>
 <p>The path to the CLI you are testing (defaults to ./lib/cli.js)</p>
 
 <a href="#api" id="api" style="color: inherit; text-decoration: none;">
   <h2>Api</h2>
 </a>
-<p>####<a href="https://jaunt.github.io/clifry/classes/ClifryAPI.html">Documentation</a></p>
+
+<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
+  <h4><a href="https://jaunt.github.io/clifry/classes/ClifryAPI.html">Documentation</a></h4>
+</a>
 </div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Exports</a></li></ul></nav><nav class="tsd-navigation secondary menu-sticky"><ul><li class="tsd-kind-class"><a href="classes/ClifryAPI.html" class="tsd-kind-icon">ClifryAPI</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
