@@ -1,11 +1,12 @@
 {
   "name": "clifry",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "CLI Functional Testing tool powered by Node.JS",
-  "main": "./lib/index.js",
+  "main": "./lib/clifry.js",
   "scripts": {
     "start": "node lib/clify.js",
     "nodewatch": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/clifry.ts",
+    "postbuild": "typedoc src/api.ts --excludeInternal --excludePrivate",
     "build": "tsc"
   },
   "repository": {
@@ -34,6 +35,6 @@
     "commander": "^8.3.0"
   },
   "bin": {
-    "clifry": "./lib/index.js"
+    "clifry": "./lib/clifry.js"
   }
 }

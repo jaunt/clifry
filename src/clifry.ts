@@ -13,7 +13,7 @@ const version = "0.0.1"; // todo get version from git tag
 console.log(chalk.black.bgWhite.bold("\n CLI", chalk.white.bgBlue(" FRY ")));
 console.log(chalk.blueBright("Version " + version + "\n"));
 
-const loggers = makeLoggers("# ", "!!! ", chalk.greenBright, chalk.redBright);
+const loggers = makeLoggers("# ", "!!! ", chalk.green, chalk.red);
 const log = loggers.log;
 const logError = loggers.logError;
 

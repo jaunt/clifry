@@ -80,7 +80,7 @@ const _formatLog = (prefix: string, useChalk = chalk.green, ...args: any) => {
     } else {
       txt = JSON.stringify(arg, null, 2);
     }
-    console.log(useChalk(prefix + chalk.bgWhite(arg)));
+    console.log(useChalk(prefix + chalk.bold(arg)));
   }
 };
 const makeLoggers = (
