@@ -92,7 +92,7 @@ Create a parent test folder in your project, then create a child folder for each
 
 The child folder names become the test names you can run using the Clifry's -t argument.
 
-####Optionally call Clifry with the following arguments:
+#### Optionally call Clifry with the following arguments:
 
 **-f, --folder**
 
