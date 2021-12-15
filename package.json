@@ -1,6 +1,6 @@
 {
   "name": "clifry",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CLI Functional Testing tool powered by Node.JS",
   "main": "./lib/clifry.js",
   "scripts": {
