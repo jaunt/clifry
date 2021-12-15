@@ -1,5 +1,5 @@
 {
-  "name": "clifry",
+  "name": "@danglingdev/clifry",
   "version": "0.0.2",
   "description": "CLI Functional Testing tool powered by Node.JS",
   "main": "./lib/clifry.js",
@@ -35,9 +35,14 @@
     "commander": "^8.3.0"
   },
   "bin": {
-    "clifry": "./lib/clifry.js"
+    "clifry": "lib/clifry.js"
   },
   "files": [
     "lib/**/*"
-  ]
+  ],
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "tests"
+  }
 }
