@@ -144,8 +144,7 @@ export class ClifryAPI {
     return new Promise(function (resolve) {
       if (!state.process) {
         logError("You CLI has not started, cannot run " + description);
-        resolve(0);
-        return;
+        throw "failed";
       }
       if (_searchOutput(test)) {
         log(type + " already passes " + description);
@@ -166,9 +165,11 @@ export class ClifryAPI {
         if (timeout) {
           log("Will timeout in " + timeout + " ms");
           _timeout = setTimeout(() => {
-            log("Timed out waiting for " + type + " to pass " + description);
+            logError(
+              "Timed out waiting for " + type + " to pass " + description
+            );
             state.process[type].removeListener("data", _testOutput);
-            resolve(false);
+            throw "failed";
           }, timeout);
         }
         state.process[type].on("data", _testOutput);
@@ -199,7 +200,7 @@ export class ClifryAPI {
    *
    * @param timeout  Optional:  Max time to wait for your CLI to start (ms).
    *
-   * @returns A promise that will resolve **true** when your CLI starts, or **false** if it fails to do so before the timeout specified.
+   * @returns A promise that will resolve **true** when your CLI starts, or will throw an error on timeout.
    *
    */
   start(timeout: number = 0) {
@@ -219,8 +220,8 @@ export class ClifryAPI {
       if (timeout) {
         log("Will timeout in " + timeout + " ms");
         _timeout = setTimeout(() => {
-          log("Timed out waiting to spawn.");
-          resolve(false);
+          logError("Timed out waiting to spawn.");
+          throw "failed";
         }, timeout);
       }
       try {
@@ -229,7 +230,8 @@ export class ClifryAPI {
           cwd: cwd,
         });
       } catch (error) {
-        resolve(false);
+        logError(error);
+        throw "failed";
       }
       state.process.on("spawn", () => {
         log("CLI Started");
@@ -293,7 +295,7 @@ export class ClifryAPI {
    *
    * @param timeout  Optional:  Max time to wait for your CLI to stop on its own (ms).
    *
-   * @returns A promise that will resolve with the CLI's exit code, or 124 if it timed out shutting down.
+   * @returns A promise that will resolve with the CLI's exit code, or will throw an error on timeout.
    *
    */
   untilStopped(timeout: number = 0) {
@@ -301,7 +303,7 @@ export class ClifryAPI {
     return new Promise(function (resolve) {
       if (!state.process) {
         logError("CLI has not started.");
-        resolve(0);
+        throw "failed";
       } else if (state.process.exitCode != null) {
         log("CLI is already stopped");
         resolve(state.process.exitCode);
@@ -321,7 +323,7 @@ export class ClifryAPI {
           _timeout = setTimeout(() => {
             log("Timed out waiting to stop.");
             state.process.removeListener("exit", _stopListener);
-            resolve(124);
+            throw "failed";
           }, timeout);
         }
         state.process.on("exit", _stopListener);
@@ -406,7 +408,7 @@ export class ClifryAPI {
    * @param seconds The desired number of seconds of idle time.
    * @param timeout  Optional:  Max time to wait for your CLI to become idle (ms).
    *
-   * @returns A promise that will resolve **true** if the CLI becomes idle for the desired time, **false** if it times out first.
+   * @returns A promise that will resolve **true** if the CLI becomes idle for the desired time, or will throw an error on timeout.
    *
    */
   untilOutputIdleSeconds(seconds: Number, timeout: number = 0) {
@@ -416,8 +418,7 @@ export class ClifryAPI {
     return new Promise(function (resolve) {
       if (!state.process) {
         logError("Test has not started, nothing to wait for.");
-        resolve(0);
-        return;
+        throw "failed";
       }
       if (state.secondsIdle >= seconds) {
         log("Output has already been idle for " + seconds + " seconds.");
@@ -437,9 +438,9 @@ export class ClifryAPI {
         if (timeout) {
           log("Will timeout in " + timeout + " ms");
           _timeout = setTimeout(() => {
-            log("Timed out waiting to stop.");
+            logError("Timed out waiting to stop.");
             state.idleEmitter.removeListener("tick", idleChecker);
-            resolve(false);
+            throw "failed";
           }, timeout);
         }
         state.idleEmitter.on("tick", idleChecker);
@@ -459,7 +460,7 @@ export class ClifryAPI {
    * @param search The string you'd like the output to include.
    * @param timeout  Optional:  Max time to wait for a match (ms).
    *
-   * @returns a promise that will resolve **true** if a match is found or **false** if it times out first.
+   * @returns a promise that will resolve **true** if a match is found, or will throw an error on timeout.
    *
    */
   untilStdoutIncludes(search: string, timeout: number = 0) {
@@ -482,7 +483,7 @@ export class ClifryAPI {
 	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
-	 * @returns a promise that will resolve **true** if a match is found or **false** if it times out first.
+	 * @returns a promise that will resolve **true** if a match is found, or will throw an error on timeout.
 	 *
 	 */
   untilStderrIncludes(search: string, timeout: number = 0) {
@@ -501,7 +502,7 @@ export class ClifryAPI {
 	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
-	 * @returns a promise that will resolve true if a match is found or false if it times out first.
+	 * @returns a promise that will resolve true if a match is found, or will throw an error on timeout.
 	 *
 	 */
   untilStdoutEquals(search: string, timeout: number = 0) {
@@ -520,7 +521,7 @@ export class ClifryAPI {
 	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
-	 * @returns a promise that will resolve true if a match is found or false if it times out first.
+	 * @returns a promise that will resolve true if a match is found, or will throw an error on timeout..
 	 *
 	 */
   untilStderrEquals(search: string, timeout: number = 0) {
@@ -546,7 +547,7 @@ export class ClifryAPI {
    * For example if you search and find something, then later you want to find something again, using the
    * same uniqueID will tell Clifry that you want to start where the previous search left off rather than starting again from the beginning of the entire output.
    *
-   * @returns a promise that will resolve **true** if your test is passed, or **false** if it times out first.
+   * @returns a promise that will resolve **true** if your test is passed, or will throw an error on timeout.
    *
    */
   untilStdoutPasses(
@@ -569,7 +570,7 @@ export class ClifryAPI {
    *
    * See [[untilStdoutPasses]] for example isage.
    *
-   * @returns a promise that will resolve **true** if your test is passed, or **false** if it times out first.
+   * @returns a promise that will resolve **true** if your test is passed, or will throw an error on timeout.
    *
    */
   untilStderrPasses(

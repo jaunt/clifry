@@ -3,29 +3,30 @@ const test = (CliFry) => {
     const testRun = CliFry(
       {
         name: "Simple Test",
-        description: "Run python, do some math, exit.",
+        description: "Run python, do math, exit.",
       },
       // arguments
       ["-i", "-q"]
     );
-    testRun.start();
 
-    await testRun.untilStderrIncludes(">>>", 5000);
+    try {
+      await testRun.start(100);
 
-    testRun.write("10+10");
+      await testRun.untilStderrIncludes(">>>", 5000);
 
-    const result = await testRun.untilStdoutIncludes("20", 2000);
+      testRun.write("10+10");
 
-    testRun.waitUntilOutputIdleSeconds(1, 2000);
+      await testRun.untilStdoutIncludes("20", 2000);
 
-    testRun.write("exit()");
+      await testRun.untilOutputIdleSeconds(1, 2000);
 
-    await testRun.stopped(1000);
+      testRun.write("exit()");
 
-    if (!result) {
-      reject("10 + 10 does not equal 21");
-    } else {
+      await testRun.untilStopped(1000);
+
       resolve("success");
+    } catch (error) {
+      reject("Python can't do math!");
     }
   });
 };
