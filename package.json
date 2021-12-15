@@ -36,5 +36,8 @@
   },
   "bin": {
     "clifry": "./lib/clifry.js"
-  }
+  },
+  "files": [
+    "lib/**/*"
+  ]
 }
