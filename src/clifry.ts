@@ -8,10 +8,10 @@ import { exit } from "process";
 
 import { ClifryAPI } from "./api";
 
-const version = "0.0.1"; // todo get version from git tag
+import { LIB_VERSION } from "./version";
 
 console.log(chalk.black.bgWhite.bold("\n CLI", chalk.white.bgBlue(" FRY ")));
-console.log(chalk.blueBright("Version " + version + "\n"));
+console.log(chalk.blueBright("Version " + LIB_VERSION + "\n"));
 
 const loggers = makeLoggers("# ", "!!! ", chalk.green, chalk.red);
 const log = loggers.log;
@@ -30,7 +30,7 @@ const program = new Command()
     "./lib/cli.js"
   );
 
-program.version(version);
+program.version(LIB_VERSION);
 program.parse(process.argv);
 const options = program.opts();
 
@@ -71,7 +71,7 @@ const runTest = (testName: string): Promise<string> => {
   return new Promise(async function (resolve, reject) {
     const testDir = fspath.resolve(options.folder + "/" + testName);
     let testModule = fspath.resolve(testDir + "/" + "test.js");
-    const cmd = fspath.resolve(options.cli);
+    const cmd = options.cli;
     const cwd = fspath.resolve(options.folder + "/" + testName);
     let api: ClifryAPIWrapper;
     try {
