@@ -30,47 +30,39 @@ of your tests clean and easy to read.
 ##### Example test.js file: Run python interactively to make sure it can do math!
 
 ```javascript
-const timeout = 5000;
 const test = (CliFry) => {
   return new Promise(async function (resolve, reject) {
     const testRun = CliFry(
       {
         name: "Simple Test",
-        description: "Run python, do some math, exit.",
+        description: "Run python, do math, exit.",
       },
       // arguments
       ["-i", "-q"]
     );
-    testRun.start();
 
-    let success;
+    try {
+      await testRun.start(100);
 
-    success = await testRun.untilStderrIncludes(">>>", timeout);
+      await testRun.untilStderrIncludes(">>>", 5000);
 
-    if (!success) {
-      reject("Did not get python prompt");
-      return;
-    }
+      testRun.write("10+10");
 
-    testRun.write("10+10");
+      await testRun.untilStdoutIncludes("20", 2000);
 
-    success = await testRun.untilStdoutIncludes("20", 2000);
+      await testRun.untilOutputIdleSeconds(1, 2000);
 
-    if (!success) {
-      reject("Python does not know math.");
-    }
+      testRun.write("exit()");
 
-    testRun.write("exit()");
+      await testRun.untilStopped(1000);
 
-    success = await testRun.stopped(timeout);
-
-    if (!success) {
-      reject("Python would not shutdown gracefully");
-    } else {
-      resolve("Python is great!");
+      resolve("success");
+    } catch (error) {
+      reject("Python can't do math!");
     }
   });
 };
+
 module.exports = test;
 ```
 

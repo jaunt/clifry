@@ -1,4 +1,3 @@
-import { cwd } from "process";
 import { Pinger, makeLoggers } from "./shared";
 import chalk from "chalk";
 const loggers = makeLoggers("# ", "!!! ", chalk.greenBright, chalk.redBright);
@@ -208,12 +207,13 @@ export class ClifryAPI {
       logError(
         "CLI Already started.  Use forceStop or wait until the process ends."
       );
-      return;
+      throw "failed";
     }
     let state = this.state;
     const cmd = this.cmd;
+    const cwd = this.dir;
     const args = this.args;
-    const clearTimers = this.clearTimers;
+    const clearTimers = this.clearTimers.bind(this);
     return new Promise(function (resolve) {
       log("Starting: " + cmd + " in " + cwd);
       let _timeout: NodeJS.Timeout | null = null;
@@ -466,7 +466,7 @@ export class ClifryAPI {
   untilStdoutIncludes(search: string, timeout: number = 0) {
     return this._untilArrayTests(
       "includes_" + search,
-      "includes " + search,
+      "includes '" + search + "'",
       "stdout",
       (value: string) => value.includes(search),
       timeout
@@ -489,7 +489,7 @@ export class ClifryAPI {
   untilStderrIncludes(search: string, timeout: number = 0) {
     return this._untilArrayTests(
       "includes_" + search,
-      "includes " + search,
+      "includes '" + search + "'",
       "stderr",
       (line: string) => line.includes(search),
       timeout
@@ -508,7 +508,7 @@ export class ClifryAPI {
   untilStdoutEquals(search: string, timeout: number = 0) {
     return this._untilArrayTests(
       "equals_" + search,
-      "equals " + search,
+      "equals '" + search + "'",
       "stdout",
       (line: string) => line === search,
       timeout
@@ -527,7 +527,7 @@ export class ClifryAPI {
   untilStderrEquals(search: string, timeout: number = 0) {
     return this._untilArrayTests(
       "equals_" + search,
-      "equals " + search,
+      "equals '" + search + "'",
       "stderr",
       (line: string) => line === search,
       timeout
