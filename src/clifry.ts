@@ -3,7 +3,7 @@ import { Command } from "commander";
 import chalk from "chalk";
 import fs from "fs";
 import fspath from "path";
-import { makeLoggers } from "./shared";
+import { makeLoggers } from "@danglingdev/shared-ts";
 import { exit } from "process";
 
 import { ClifryAPI } from "./api";

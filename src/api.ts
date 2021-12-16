@@ -1,4 +1,4 @@
-import { Pinger, makeLoggers } from "./shared";
+import { Pinger, makeLoggers } from "@danglingdev/shared-ts";
 import chalk from "chalk";
 const loggers = makeLoggers("# ", "!!! ", chalk.greenBright, chalk.redBright);
 const log = loggers.log;
