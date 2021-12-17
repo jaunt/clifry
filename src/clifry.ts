@@ -24,11 +24,8 @@ const program = new Command()
     "tests parent folder (default = ./tests)",
     "./tests"
   )
-  .option(
-    "-c, --cli <path>",
-    "path to cli to test (default = ./lib/cli.js)",
-    "./lib/cli.js"
-  );
+  .option("-c, --cli <path>", "path to cli to test")
+  .option("-n, --node <script>", "if cli is a node script");
 
 program.version(LIB_VERSION);
 program.parse(process.argv);
@@ -61,6 +58,25 @@ if (!tests) {
   exit();
 }
 
+if (!options.cli && !options.node) {
+  logError("Must specify either a cli or a node script.");
+  exit();
+}
+if (options.cli && options.node) {
+  logError("Must specify either a cli or a node script, not both.");
+  exit();
+}
+
+let cmd: string = "";
+let script: string = "";
+if (options.cli) {
+  cmd = options.cli;
+}
+if (options.node) {
+  cmd = process.execPath;
+  script = options.node;
+}
+
 class ClifryAPIWrapper extends ClifryAPI {
   cleanup() {
     super._cleanupTest();
@@ -71,7 +87,6 @@ const runTest = (testName: string): Promise<string> => {
   return new Promise(async function (resolve, reject) {
     const testDir = fspath.resolve(options.folder + "/" + testName);
     let testModule = fspath.resolve(testDir + "/" + "test.js");
-    const cmd = options.cli;
     const cwd = fspath.resolve(options.folder + "/" + testName);
     let api: ClifryAPIWrapper;
     try {
@@ -88,12 +103,18 @@ const runTest = (testName: string): Promise<string> => {
         ) => {
           log("Test: " + attr.name);
           log("Description: " + attr.description);
+          let _args: string[] = [];
+          if (script) {
+            _args.push(fspath.resolve(script));
+          }
+          _args.push(...args);
+          log(_args);
           api = new ClifryAPIWrapper(
             cmd,
             cwd,
             attr.name,
             attr.description,
-            args
+            _args
           );
           return api;
         }

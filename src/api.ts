@@ -253,6 +253,7 @@ export class ClifryAPI {
         if (!state.output["stdout"]) {
           state.output["stdout"] = [];
         }
+        log("stdout: " + data.toString());
         state.output["stdout"].push(data.toString());
         state.secondsIdle = 0;
       });
@@ -260,6 +261,7 @@ export class ClifryAPI {
         if (!state.output["stderr"]) {
           state.output["stderr"] = [];
         }
+        log("stderr: " + data.toString());
         state.output["stderr"].push(data.toString());
         state.secondsIdle = 0;
       });
