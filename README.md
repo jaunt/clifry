@@ -96,7 +96,13 @@ One or more test names (folder names). If not specified, Clifry will run all tha
 
 **-c, --cli**
 
-The path to the CLI you are testing (defaults to ./lib/cli.js)
+The path to the normal CLI you are testing
+
+**-n, --node**
+
+The path to the node CLI you are testing
+
+##### You must specify either a node or a regular binary cli, but not both.
 
 ## Api
 

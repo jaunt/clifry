@@ -127,48 +127,42 @@ const runTest = (testName: string): Promise<string> => {
   });
 };
 
-let count = tests.length;
-
 let results: { name: string; passed: boolean; message: string }[] = [];
 
 let failed = false;
 
-const checkDone = () => {
-  count--;
-  if (count == 0) {
-    log("\n\nTesting summary:");
-    if (failed) {
-      log(chalk.red(JSON.stringify(results, null, "\t")));
-    } else {
-      log(chalk.green(JSON.stringify(results, null, "\t")));
-    }
-    if (failed) {
-      exit(1);
-    } else {
-      exit(0);
-    }
-  }
-};
-
-tests.forEach((name: string) => {
-  runTest(name)
-    .then((result: string) => {
+const runTests = async () => {
+  for (const name of tests) {
+    try {
+      let result = await runTest(name);
       log("Test Resolved With:", result);
       results.push({
         name: name,
         passed: true,
         message: result,
       });
-      checkDone();
-    })
-    .catch((result: string) => {
+    } catch (result) {
       failed = true;
-      logError("Test Rejected With:", result);
+      logError("Test Rejected With:", result as string);
       results.push({
         name: name,
         passed: false,
-        message: result,
+        message: result as string,
       });
-      checkDone();
-    });
-});
+    }
+  });
+
+  log("\n\nTesting summary:");
+  if (failed) {
+    log(chalk.red(JSON.stringify(results, null, "\t")));
+  } else {
+    log(chalk.green(JSON.stringify(results, null, "\t")));
+  }
+  if (failed) {
+    exit(1);
+  } else {
+    exit(0);
+  }
+};
+
+runTests();

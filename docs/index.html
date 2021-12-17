@@ -56,7 +56,13 @@ you want to write them in typescript you could always set up a pre-compile step 
 <p><strong>-t, --tests</strong></p>
 <p>One or more test names (folder names). If not specified, Clifry will run all that it finds in the parent test folder.</p>
 <p><strong>-c, --cli</strong></p>
-<p>The path to the CLI you are testing (defaults to ./lib/cli.js)</p>
+<p>The path to the normal CLI you are testing</p>
+<p><strong>-n, --node</strong></p>
+<p>The path to the node CLI you are testing</p>
+
+<a href="#you-must-specify-either-a-node-or-a-regular-binary-cli-but-not-both" id="you-must-specify-either-a-node-or-a-regular-binary-cli-but-not-both" style="color: inherit; text-decoration: none;">
+  <h5>You must specify either a node or a regular binary cli, but not both.</h5>
+</a>
 
 <a href="#api" id="api" style="color: inherit; text-decoration: none;">
   <h2>Api</h2>
