@@ -8,7 +8,7 @@ import { exit } from "process";
 
 import { ClifryAPI } from "./api";
 
-import { LIB_VERSION } from "./version";
+const LIB_VERSION = require("../package.json").version;
 
 console.log(chalk.black.bgWhite.bold("\n CLI", chalk.white.bgBlue(" FRY ")));
 console.log(chalk.blueBright("Version " + LIB_VERSION + "\n"));
@@ -150,7 +150,7 @@ const runTests = async () => {
         message: result as string,
       });
     }
-  });
+  }
 
   log("\n\nTesting summary:");
   if (failed) {

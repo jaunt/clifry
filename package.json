@@ -4,9 +4,7 @@
   "description": "CLI Functional Testing tool powered by Node.JS",
   "main": "./lib/clifry.js",
   "scripts": {
-    "start": "node lib/clify.js",
-    "nodewatch": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/clifry.ts",
-    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('git-tag-version')()) + ';'\" > src/version.ts",
+    "start": "node ./lib/clifry.js",
     "postbuild": "typedoc src/api.ts --excludeInternal --excludePrivate",
     "build": "tsc",
     "test": "echo \"No test specified\""
@@ -18,7 +16,8 @@
   "keywords": [
     "cli",
     "functional testing",
-    "regression testing"
+    "regression testing",
+    "integration testing"
   ],
   "author": "Stephen Evans",
   "license": "MIT",
