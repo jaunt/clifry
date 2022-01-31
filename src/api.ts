@@ -5,6 +5,7 @@ const log = loggers.log;
 const logError = loggers.logError;
 const { spawn } = require("child_process");
 var emitter = require("events").EventEmitter;
+const readline = require("readline");
 
 /**
  * Internal state for class
@@ -405,6 +406,26 @@ export class ClifryAPI {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
   /**
+   * Pause the test and read a line from the console.
+   *
+   * @param message The message to promt during the test.
+   *
+   * @returns Whatever was typed in the console.
+   *
+   */
+  readline(message: string) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    return new Promise((resolve) =>
+      rl.question(message, (ans: string) => {
+        rl.close();
+        resolve(ans);
+      })
+    );
+  }
+  /**
    * Wait until your CLI's stdout and stderr have been quiet for N seconds.
    *
    * @param seconds The desired number of seconds of idle time.
@@ -433,7 +454,10 @@ export class ClifryAPI {
             if (_timeout != null) {
               clearTimeout(_timeout);
             }
-            log("Output has been idle for " + s + " seconds.");
+            log(
+              "Output has been idle for " + s + " seconds. (" + seconds + ")"
+            );
+            state.idleEmitter.removeListener("tick", idleChecker);
             resolve(true);
           }
         }

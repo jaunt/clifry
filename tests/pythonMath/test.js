@@ -20,13 +20,18 @@ const test = (CliFry) => {
 
       await testRun.untilOutputIdleSeconds(1, 2000);
 
+      const answer = await testRun.readline("What is 10+10?");
+
+      testRun.write(answer);
+
       testRun.write("exit()");
 
       await testRun.untilStopped(1000);
 
       resolve("success");
     } catch (error) {
-      reject("Python can't do math!");
+      console.log(error);
+      reject("Python can't do math: ");
     }
   });
 };
