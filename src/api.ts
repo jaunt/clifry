@@ -115,15 +115,18 @@ export class ClifryAPI {
    *
    * @internal
    */
-  // matchTestName + "_" + search
-  //  matchTestName + " with " + search
   private _untilArrayTests(
     testID: string,
     description: string,
     type: string,
     test: (line: string) => boolean,
+    backtrack: boolean,
     timeout: number
   ) {
+    if (!backtrack) {
+      // start from now unless backtrack is set
+      this.state.findIndex[testID] = this.state.output[type].length;
+    }
     const _searchOutput = (test: (value: string) => boolean) => {
       if (!this.state.findIndex[testID]) {
         this.state.findIndex[testID] = 0;
@@ -484,17 +487,23 @@ export class ClifryAPI {
    * would return true.
    *
    * @param search The string you'd like the output to include.
+   * @param backtrack Optional:  Test includes output since last call to test.
    * @param timeout  Optional:  Max time to wait for a match (ms).
    *
    * @returns a promise that will resolve **true** if a match is found, or will throw an error on timeout.
    *
    */
-  untilStdoutIncludes(search: string, timeout: number = 0) {
+  untilStdoutIncludes(
+    search: string,
+    backtrack: boolean = false,
+    timeout: number = 0
+  ) {
     return this._untilArrayTests(
       "includes_" + search,
       "includes '" + search + "'",
       "stdout",
       (value: string) => value.includes(search),
+      backtrack,
       timeout
     );
   }
@@ -506,18 +515,24 @@ export class ClifryAPI {
 	 * See [[untilStdoutIncludes]] for example usage.
 	 *
 	 * @param search The string you'd like the output to include.
+   * @param backtrack Optional:  Test includes output since last call to test.
 	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
 	 * @returns a promise that will resolve **true** if a match is found, or will throw an error on timeout.
 	 *
 	 */
-  untilStderrIncludes(search: string, timeout: number = 0) {
+  untilStderrIncludes(
+    search: string,
+    backtrack: boolean = false,
+    timeout: number = 0
+  ) {
     return this._untilArrayTests(
       "includes_" + search,
       "includes '" + search + "'",
       "stderr",
       (line: string) => line.includes(search),
+      backtrack,
       timeout
     );
   }
@@ -525,18 +540,24 @@ export class ClifryAPI {
 	 * Wait until a line of stdout matches your search string exactly.
 	 *
 	 * @param search The string you'd like stdout to match exactly.
+   * @param backtrack Optional:  Test includes output since last call to test.
 	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
 	 * @returns a promise that will resolve true if a match is found, or will throw an error on timeout.
 	 *
 	 */
-  untilStdoutEquals(search: string, timeout: number = 0) {
+  untilStdoutEquals(
+    search: string,
+    backtrack: boolean = false,
+    timeout: number = 0
+  ) {
     return this._untilArrayTests(
       "equals_" + search,
       "equals '" + search + "'",
       "stdout",
       (line: string) => line === search,
+      backtrack,
       timeout
     );
   }
@@ -544,18 +565,24 @@ export class ClifryAPI {
 	 * Wait until a line of stderr matches your search string exactly.
 	 *
 	 * @param search The string you'd like stderr to match exactly.
+   * @param backtrack Optional:  Test includes output since last call to test.
 	 * @param timeout  Optional:  Max time to wait for a match (ms).
 
 	 *
 	 * @returns a promise that will resolve true if a match is found, or will throw an error on timeout..
 	 *
 	 */
-  untilStderrEquals(search: string, timeout: number = 0) {
+  untilStderrEquals(
+    search: string,
+    backtrack: boolean = false,
+    timeout: number = 0
+  ) {
     return this._untilArrayTests(
       "equals_" + search,
       "equals '" + search + "'",
       "stderr",
       (line: string) => line === search,
+      backtrack,
       timeout
     );
   }
@@ -565,6 +592,7 @@ export class ClifryAPI {
    * @param uniqueID This is required to enable calling your test multiple times throughout the course of a test.
    * @param logMessage This will be printed in CliFry's log and should be short but descriptive, so that you can see clearly when your function passed or failed.
    * @param matchFunc This will be called for every line of your CLI's output.  Return true if the line was matched by your function.
+   * @param backtrack Optional:  Test includes output since last call to test.
    * @param timeout  Optional:  Max time to wait for a pass (ms).
    *
    * @remarks
@@ -580,9 +608,17 @@ export class ClifryAPI {
     uniqueID: string,
     logMessage: string,
     test: (line: string) => boolean,
+    backtrack: boolean = false,
     timeout: number = 0
   ) {
-    return this._untilArrayTests(uniqueID, logMessage, "stdout", test, timeout);
+    return this._untilArrayTests(
+      uniqueID,
+      logMessage,
+      "stdout",
+      test,
+      backtrack,
+      timeout
+    );
   }
   /**
    * Wait until a line of your CLI's stderr passes your supplied matching function.
@@ -590,6 +626,7 @@ export class ClifryAPI {
    * @param uniqueID This is required to enable calling your test multiple times throughout the course of a test.
    * @param logMessage This will be printed in CliFry's log and should be short but descriptive, so that you can see clearly when your function passed or failed.
    * @param matchFunc This will be called for every line of your CLI's output.  Return true if the line was matched by your function.
+   * @param backtrack Optional:  Test includes output since last call to test.
    * @param timeout  Optional:  Max time to wait for a match (ms).
    *
    * @remarks
@@ -603,8 +640,16 @@ export class ClifryAPI {
     uniqueID: string,
     logMessage: string,
     test: (line: string) => boolean,
+    backtrack: boolean = false,
     timeout: number = 0
   ) {
-    return this._untilArrayTests(uniqueID, logMessage, "stderr", test, timeout);
+    return this._untilArrayTests(
+      uniqueID,
+      logMessage,
+      "stderr",
+      test,
+      backtrack,
+      timeout
+    );
   }
 }
