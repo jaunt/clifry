@@ -12,11 +12,11 @@ const test = (CliFry) => {
     try {
       await testRun.start(100);
 
-      await testRun.untilStderrIncludes(">>>", 5000);
+      await testRun.untilStderrIncludes(">>>");
 
       testRun.write("10+10");
 
-      await testRun.untilStdoutIncludes("20", 2000);
+      await testRun.untilStdoutIncludes("20");
 
       await testRun.untilOutputIdleSeconds(1, 2000);
 
