@@ -1,6 +1,6 @@
 {
   "name": "@danglingdev/clifry",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "CLI Functional Testing tool powered by Node.JS",
   "main": "./lib/clifry.js",
   "scripts": {
