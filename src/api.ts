@@ -125,7 +125,9 @@ export class ClifryAPI {
   ) {
     if (!backtrack) {
       // start from now unless backtrack is set
-      this.state.findIndex[testID] = this.state.output[type].length;
+      if (this.state.output[type]) {
+        this.state.findIndex[testID] = this.state.output[type].length;
+      }
     }
     const _searchOutput = (test: (value: string) => boolean) => {
       if (!this.state.findIndex[testID]) {
