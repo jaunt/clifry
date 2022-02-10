@@ -1,6 +1,6 @@
 import { Pinger, makeLoggers } from "@danglingdev/shared-ts";
-import chalk from "chalk";
-const loggers = makeLoggers("# ", "!!! ", chalk.greenBright, chalk.redBright);
+import pico from "picocolors";
+const loggers = makeLoggers("# ", "!!! ", pico.green, pico.red);
 const log = loggers.log;
 const logError = loggers.logError;
 const { spawn } = require("child_process");
