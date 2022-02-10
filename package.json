@@ -4,10 +4,10 @@
   "description": "CLI Functional Testing tool powered by Node.JS",
   "main": "./lib/clifry.js",
   "scripts": {
-    "start": "node ./lib/clifry.js",
+    "start": "node ./lib/clifry.js -c /usr/bin/python",
     "postbuild": "typedoc src/api.ts --excludeInternal --excludePrivate",
     "build": "tsc",
-    "test": "echo \"No test specified\""
+    "test": "node ./lib/clifry.js -c /usr/bin/python"
   },
   "repository": {
     "type": "git",
@@ -34,8 +34,8 @@
   },
   "dependencies": {
     "@danglingdev/shared-ts": "~0.0.2",
-    "chalk": "^4.1.2",
-    "commander": "^8.3.0"
+    "commander": "^8.3.0",
+    "picocolors": "^1.0.0"
   },
   "bin": {
     "clifry": "lib/clifry.js"

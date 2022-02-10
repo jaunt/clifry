@@ -20,9 +20,9 @@ const test = (CliFry) => {
 
       await testRun.untilOutputIdleSeconds(1, 2000);
 
-      const answer = await testRun.readline("What is 10+10?");
+      //const answer = await testRun.readline("What is 10+10?");
 
-      testRun.write(answer);
+      // testRun.write(answer);
 
       testRun.write("exit()");
 

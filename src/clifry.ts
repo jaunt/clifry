@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import chalk from "chalk";
+import pico from "picocolors";
 import fs from "fs";
 import fspath from "path";
 import { makeLoggers } from "@danglingdev/shared-ts";
@@ -10,10 +10,14 @@ import { ClifryAPI } from "./api";
 
 const LIB_VERSION = require("../package.json").version;
 
-console.log(chalk.black.bgWhite.bold("\n CLI", chalk.white.bgBlue(" FRY ")));
-console.log(chalk.blueBright("Version " + LIB_VERSION + "\n"));
+console.log(
+  pico.black(
+    pico.bgWhite(pico.bold("\n CLI" + pico.white(pico.bgBlue(" FRY "))))
+  )
+);
+console.log(pico.blue("Version " + LIB_VERSION + "\n"));
 
-const loggers = makeLoggers("# ", "!!! ", chalk.green, chalk.red);
+const loggers = makeLoggers("# ", "!!! ", pico.green, pico.red);
 const log = loggers.log;
 const logError = loggers.logError;
 
@@ -154,9 +158,9 @@ const runTests = async () => {
 
   log("\n\nTesting summary:");
   if (failed) {
-    log(chalk.red(JSON.stringify(results, null, "\t")));
+    log(pico.red(JSON.stringify(results, null, "\t")));
   } else {
-    log(chalk.green(JSON.stringify(results, null, "\t")));
+    log(pico.green(JSON.stringify(results, null, "\t")));
   }
   if (failed) {
     exit(1);
