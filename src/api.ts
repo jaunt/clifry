@@ -149,7 +149,7 @@ export class ClifryAPI {
     return new Promise(function (resolve) {
       if (!state.process) {
         logError("You CLI has not started, cannot run " + description);
-        throw "failed";
+        throw new Error("failed");
       }
       if (_searchOutput(test)) {
         log(type + " already passes " + description);
@@ -174,7 +174,7 @@ export class ClifryAPI {
               "Timed out waiting for " + type + " to pass " + description
             );
             state.process[type].removeListener("data", _testOutput);
-            throw "failed";
+            throw new Error("failed");
           }, timeout);
         }
         state.process[type].on("data", _testOutput);
@@ -213,7 +213,7 @@ export class ClifryAPI {
       logError(
         "CLI Already started.  Use forceStop or wait until the process ends."
       );
-      throw "failed";
+      throw new Error("failed");
     }
     let state = this.state;
     const cmd = this.cmd;
@@ -227,7 +227,7 @@ export class ClifryAPI {
         log("Will timeout in " + timeout + " ms");
         _timeout = setTimeout(() => {
           logError("Timed out waiting to spawn.");
-          throw "failed";
+          throw new Error("failed");
         }, timeout);
       }
       try {
@@ -237,7 +237,7 @@ export class ClifryAPI {
         });
       } catch (error) {
         logError(error);
-        throw "failed";
+        throw new Error("failed");
       }
       state.process.on("spawn", () => {
         log("CLI Started");
@@ -311,7 +311,7 @@ export class ClifryAPI {
     return new Promise(function (resolve) {
       if (!state.process) {
         logError("CLI has not started.");
-        throw "failed";
+        throw new Error("failed");
       } else if (state.process.exitCode != null) {
         log("CLI is already stopped");
         resolve(state.process.exitCode);
@@ -331,7 +331,7 @@ export class ClifryAPI {
           _timeout = setTimeout(() => {
             log("Timed out waiting to stop.");
             state.process.removeListener("exit", _stopListener);
-            throw "failed";
+            throw new Error("failed");
           }, timeout);
         }
         state.process.on("exit", _stopListener);
@@ -446,7 +446,7 @@ export class ClifryAPI {
     return new Promise(function (resolve) {
       if (!state.process) {
         logError("Test has not started, nothing to wait for.");
-        throw "failed";
+        throw new Error("failed");
       }
       if (state.secondsIdle >= seconds) {
         log("Output has already been idle for " + seconds + " seconds.");
@@ -471,7 +471,7 @@ export class ClifryAPI {
           _timeout = setTimeout(() => {
             logError("Timed out waiting to stop.");
             state.idleEmitter.removeListener("tick", idleChecker);
-            throw "failed";
+            throw new Error("failed");
           }, timeout);
         }
         state.idleEmitter.on("tick", idleChecker);

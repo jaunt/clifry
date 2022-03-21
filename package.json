@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@danglingdev/shared-ts": "~0.0.2",
-    "commander": "^8.3.0",
+    "commander": "^9.1.0",
     "picocolors": "^1.0.0"
   },
   "bin": {
