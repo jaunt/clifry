@@ -1,7 +1,5 @@
 # [Clifry](https://github.com/jaunt/clifry)
 
-# PRE-ALPHA UNDER ACTIVE DEVELOPMENT
-
 #### CLI Functional Testing tool powered by Node.JS
 
 ## Design Philosophy
