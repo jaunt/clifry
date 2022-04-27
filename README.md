@@ -1,6 +1,6 @@
 # [Clifry](https://github.com/jaunt/clifry)
 
-#### CLI Functional Testing tool powered by Node.JS
+#### Node.JS application for functionally testing command line applications (CLI)
 
 ## Design Philosophy
 
