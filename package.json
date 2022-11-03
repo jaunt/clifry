@@ -1,6 +1,6 @@
 {
   "name": "@danglingdev/clifry",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "CLI Functional Testing tool powered by Node.JS",
   "main": "./lib/clifry.js",
   "scripts": {
@@ -37,7 +37,6 @@
     "@danglingdev/shared-ts": "^2.0.0",
     "commander": "^9.1.0",
     "picocolors": "^1.0.0"
-
   },
   "bin": {
     "clifry": "lib/clifry.js"
