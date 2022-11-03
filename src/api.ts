@@ -514,7 +514,7 @@ export class ClifryAPI {
 	 *
 	 * @remarks
 	 *
-	 * See [[untilStdoutIncludes]] for example usage.
+	 * See {@link untilStdoutIncludes} for example usage.
 	 *
 	 * @param search The string you'd like the output to include.
    * @param backtrack Optional:  Test includes output since last call to test.
@@ -633,7 +633,7 @@ export class ClifryAPI {
    *
    * @remarks
    *
-   * See [[untilStdoutPasses]] for example isage.
+   * See {@link untilStdoutPasses} for example isage.
    *
    * @returns a promise that will resolve **true** if your test is passed, or will throw an error on timeout.
    *
